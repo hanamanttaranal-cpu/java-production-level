@@ -16,7 +16,7 @@ RUN apk add --no-cache netcat-openbsd
 
 COPY --from=build /app/target/*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8082
 
 # Wait for MySQL before starting app
 CMD java -jar app.jar
