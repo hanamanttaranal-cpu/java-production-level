@@ -1,21 +1,27 @@
 version: '3.8'
 
 services:
+
   mysql:
     image: mysql:8.0
     container_name: ecommerce-mysql
     restart: always
+
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: ecommerce_db
       MYSQL_USER: ecomm_user
       MYSQL_PASSWORD: ecommpassword
+
     ports:
       - "3306:3306"
+
     volumes:
       - mysql_data:/var/lib/mysql
+
     networks:
       - ecommerce-network1
+
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -25,32 +31,42 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
+
     container_name: ecommerce-backend
     restart: always
+
     environment:
-      # Use underscores here to ensure Spring Boot maps them correctly
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ecommerce_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=ecomm_user
       - SPRING_DATASOURCE_PASSWORD=ecommpassword
+
     ports:
-      - "8080:8080"
-    networks:
-      - ecommerce-network1
+      - "8082:8082"
+
     depends_on:
       mysql:
         condition: service_healthy
 
+    networks:
+      - ecommerce-network1
+
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
+
     container_name: ecommerce-frontend
     restart: always
+
     ports:
       - "3000:80"
-    networks:
-      - ecommerce-network1
+
     depends_on:
       - backend
+
+    networks:
+      - ecommerce-network1
 
 volumes:
   mysql_data:
@@ -58,3 +74,4 @@ volumes:
 networks:
   ecommerce-network1:
     driver: bridge
+
