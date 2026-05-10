@@ -1,22 +1,16 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-RUN mvn dependency:go-offline
-
-COPY src ./src
-RUN mvn clean package -DskipTests
-
-# ================= RUN IMAGE =================
-FROM eclipse-temurin:17-jre-alpine
+# Use a lightweight JRE for the final image
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Install netcat (for DB check)
+# Install netcat (useful for checking if MySQL is ready)
 RUN apk add --no-cache netcat-openbsd
 
-COPY --from=build /app/target/*.jar app.jar
+# Copy the JAR already built by Jenkins in the 'Build' stage
+# The wildcard handles the versioning (ecommerce-backend-1.0.0.jar)
+COPY target/*.jar app.jar
 
 EXPOSE 8082
 
-# Wait for MySQL before starting app
-CMD java -jar app.jar
+# Start the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
